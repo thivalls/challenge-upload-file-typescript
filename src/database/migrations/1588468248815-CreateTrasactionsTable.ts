@@ -25,7 +25,9 @@ export default class CreateTrasactionsTable1588468248815
           },
           {
             name: 'value',
-            type: 'float',
+            type: 'decimal',
+            precision: 10,
+            scale: 2,
           },
           {
             name: 'type',

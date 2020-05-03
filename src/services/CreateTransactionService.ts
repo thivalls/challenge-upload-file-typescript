@@ -22,29 +22,29 @@ class CreateTransactionService {
   }: Request): Promise<Transaction> {
     const transactionRepository = getCustomRepository(TransactionRepository);
 
-    const balance = await transactionRepository.getBalance();
-    if (balance.total - value < 0 && type === 'outcome') {
-      throw new AppError("You can't remove this amount");
+    const { total } = await transactionRepository.getBalance();
+    if (type === 'outcome' && total < value) {
+      throw new AppError('You do not have enough balance');
     }
 
     const categoryRepository = getRepository(Category);
 
-    const categoryExists = await categoryRepository.findOne({
-      select: ['id'],
+    let transactionCategory = await categoryRepository.findOne({
       where: {
         title: category,
       },
     });
 
-    const category_id = !categoryExists
-      ? (await categoryRepository.save({ title: category })).id
-      : categoryExists.id;
+    if (!transactionCategory) {
+      transactionCategory = categoryRepository.create({ title: category });
+      await categoryRepository.save(transactionCategory);
+    }
 
     const transaction: Transaction = transactionRepository.create({
       title,
       value,
       type,
-      category_id,
+      category: transactionCategory,
     });
 
     await transactionRepository.save(transaction);

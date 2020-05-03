@@ -19,9 +19,8 @@ transactionsRouter.get('/', async (request, response) => {
     relations: ['category'],
   });
   const balance = await transactionsRepository.getBalance();
-  const formatedReponse = { transactions, balance };
 
-  return response.json(formatedReponse);
+  return response.json({ transactions, balance });
 });
 
 transactionsRouter.post('/', async (request, response) => {
@@ -51,15 +50,15 @@ transactionsRouter.delete('/:id', async (request, response) => {
 
 transactionsRouter.post(
   '/import',
-  upload.single('csv_file'),
+  upload.single('file'),
   async (request, response) => {
-    const { filename } = request.file;
+    const { path } = request.file;
 
     const importTransactionService = new ImportTransactionsService();
 
-    importTransactionService.execute(filename);
+    const transactions = await importTransactionService.execute(path);
 
-    return response.json({ route: 'matched' });
+    return response.json(transactions);
   },
 );
 
